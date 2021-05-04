@@ -1,5 +1,5 @@
 * Stability of traits
-
+*********************
 * Kiss Hubert János - Szabó-Morvai Ágnes
 
 * 2018-05-25
