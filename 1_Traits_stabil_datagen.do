@@ -1,7 +1,7 @@
 * Stability of traits
 *********************
 * Kiss Hubert János - Szabó-Morvai Ágnes
-
+********************
 * 2018-05-25
 
 global origdata C:\Users\szabomorvai.agnes\Dropbox\Research\Traits_Stabil\Adat\Eletpálya_adatok_new
