@@ -95,7 +95,7 @@ tabstat $outlist [weight = weight], by(loc_09_med)
 pwcorr desc_mothereduc acognisc  aemotisc  o expectations_08 effort_08 loc_09, sig
 
 ************************************************************************
-* Table 4: OLS models of LoC and educational attainment
+* Table 4: PDS Lasso models of LoC and educational attainment
 ************************************************************************
 global out "outreg2 using "$results\lassoreg_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label addstat(Clusters, e(N_clust), Selected controls, e(xselected_ct), Dictionary size, e(xhighdim_ct) ) stats(coef se pval N)" 
 global out2	"outreg2 using "$results\Rsquared_insample_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label addstat(R-sq_in, e(r2)) stats(coef se N) keep(loc_09)"
@@ -299,4 +299,96 @@ test [M4_mean]loc_09=[M6_mean]loc_09
 
 suest M5 M6
 test [M5_mean]loc_09=[M6_mean]loc_09
+}
+
+************************************************************************
+*Online Appendix
+************************************************************************
+************************************************************************
+*OA Table A.1: Home Cognitive and Emotional Scale
+************************************************************************
+forval i = 1/13 {
+	tab acogni`i'	
+	}
+	
+forval i = 1/14 {
+	tab aemoti`i'	
+	}
+
+************************************************************************
+*OA Table D.2 to D.5: Complete regressions
+************************************************************************
+global out "outreg2 using "$results\lassoreg_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label addstat(Clusters, e(N_clust), Selected controls, e(xselected_ct), Dictionary size, e(xhighdim_ct) ) stats(coef se pval N)" 
+global out2	"outreg2 using "$results\Rsquared_insample_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label addstat(R-sq_in, e(r2)) stats(coef se N) keep(loc_09)"
+global out3	"outreg2 using "$results\Rsquared_outofsample_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label addstat(R-sq_out, e(r2)) stats(coef se N) keep(loc_09)"
+
+foreach var of varlist $outlist  {
+	forval i = 1/6 {
+		pdslasso  `var' loc_09 ( ${list`i'}) if sample == 1  [weight = weight], robust cluster(omid)
+		estimates store `var'_`i'
+		$out
+	* R-sq
+	do $code\032_rsq.do
+	reg `var' $clist if sample == 1  [weight = weight], robust cluster(omid)
+	est sto olsin_`var'_0
+	$out2
+	reg `var' $clist if sample == 2  [weight = weight], robust cluster(omid)
+	est sto olsout_`var'_0
+	$out3 
+	}
+}
+
+************************************************************************
+*OA Table E.6: Nested regression results  
+************************************************************************
+global out "outreg2 using "$results\nested_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label " 
+foreach var of varlist $outlist  {
+	forval i = 1/6 {
+		reg  `var'  ${`var'_`i'} if sample == 1  [weight = weight], robust cluster(omid)
+		estimates store `var'_`i'
+		$out
+	}
+}
+
+************************************************************************
+*OA Table F.7 to F9: Channel regressions
+************************************************************************
+global out "outreg2 using "$results\exp_eff_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label addstat(Clusters, e(N_clust), Selected controls, e(xselected_ct), Dictionary size, e(xhighdim_ct) ) stats(coef se N)" 
+global out2	"outreg2 using "$results\exp_eff_rsq_insample_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label addstat(R-sq_in, e(r2)) stats(coef se N)"
+global out3	"outreg2 using "$results\exp_eff_rsq_outofsample_$S_DATE.xls", coefastr bracket append  bdec(3) tdec(3) label addstat(R-sq_out, e(r2)) stats(coef se N)"
+***************
+*EXPECTATIONS
+**************
+foreach var of varlist expectations_08 {
+	foreach i in 1 2 3 5  {
+		pdslasso  `var' loc_06 ( ${list`i'}) if sample == 1  [weight = weight], robust cluster(omid)
+		estimates store `var'_`i'
+		$out
+	* R-sq
+	do $code\032_rsq.do
+	reg `var' $clist if sample == 1  [weight = weight], robust cluster(omid)
+	est sto olsin_`var'_0
+	$out2
+	reg `var' $clist if sample == 2  [weight = weight], robust cluster(omid)
+	est sto olsout_`var'_0
+	$out3
+	}
+}
+**********
+* EFFORT	
+**********
+foreach var of varlist effort_08 effort_07_08_09 {
+	foreach i in 1 2 3 4  {
+		pdslasso  `var' loc_06 ( ${list`i'}) if sample == 1  [weight = weight], robust cluster(omid)
+		estimates store `var'_`i'
+		$out
+	* R-sq
+	do $code\032_rsq.do
+	reg `var' $clist if sample == 1  [weight = weight], robust cluster(omid)
+	est sto olsin_`var'_0
+	$out2
+	reg `var' $clist if sample == 2  [weight = weight], robust cluster(omid)
+	est sto olsout_`var'_0
+	$out3
+	}
 }
